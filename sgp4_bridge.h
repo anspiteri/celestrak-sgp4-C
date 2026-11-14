@@ -60,8 +60,15 @@ typedef struct {
  * sgp4_create returns NULL on failure and writes the error to *err.
  * err must be non-NULL. On success, the caller owns the returned handle
  * and must eventually call sgp4_destroy().
+ *
+ * Create with an explicit operation mode: 'a' for AFSPC compatibility or
+ * 'i' for improved mode. Other values fail with *err = -1.
+ * Both modes use WGS72.
+ * The mode belongs to this satellite and is fixed for its lifetime;
+ * create a new satellite to use a different mode.
  */
-Sgp4Satellite *sgp4_create(const Sgp4Elements *elements, int *err);
+Sgp4Satellite *sgp4_create(const Sgp4Elements *elements,
+                          char operation_mode, int *err);
 
 /* Propagate by minutes relative to the element epoch (negative is allowed).
  * On success, position is TEME kilometres and velocity is TEME km/s.
