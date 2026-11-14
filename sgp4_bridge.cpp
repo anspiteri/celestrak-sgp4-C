@@ -7,20 +7,21 @@
 #include <new>
 
 static const gravconsttype GRAV_MODEL = wgs72;
-static const char OPS_MODE = 'i';
 
 struct Sgp4Satellite {
     elsetrec record{};
 };
 
-extern "C" Sgp4Satellite *sgp4_create(const Sgp4Elements *elements, int *err)
+extern "C" Sgp4Satellite *sgp4_create(const Sgp4Elements *elements,
+                                     char operation_mode, int *err)
 {
     if (err == nullptr) {
         return nullptr;
     }
     *err = -1;
 
-    if (elements == nullptr ||
+    if ((operation_mode != 'a' && operation_mode != 'i') ||
+        elements == nullptr ||
         std::memchr(elements->satnum, '\0', sizeof(elements->satnum)) !=
             elements->satnum + 5 ||
         !std::isfinite(elements->epoch) ||
@@ -46,7 +47,7 @@ extern "C" Sgp4Satellite *sgp4_create(const Sgp4Elements *elements, int *err)
     }
 
     const bool success = SGP4Funcs::sgp4init(
-        GRAV_MODEL, OPS_MODE, elements->satnum, elements->epoch,
+        GRAV_MODEL, operation_mode, elements->satnum, elements->epoch,
         elements->bstar, elements->mean_motion_dot,
         elements->mean_motion_ddot, elements->eccentricity,
         elements->arg_of_pericenter, elements->inclination,
@@ -54,7 +55,7 @@ extern "C" Sgp4Satellite *sgp4_create(const Sgp4Elements *elements, int *err)
         elements->ra_of_asc_node, sat->record
     );
 
-    if (!success) {
+    if (!success || sat->record.error != 0) {
         *err = sat->record.error != 0 ? sat->record.error : -3;
         delete sat;
         return nullptr;
