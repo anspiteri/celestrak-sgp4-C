@@ -1,12 +1,30 @@
 # celestrak-sgp4-C
 
 This is a C bridge for the David Vallado et al. satellite propagation C++ library.
-Build targets include both native ASM and also WASM using emscripten.
+Build targets include both native machine code and WebAssembly (WASM) using Emscripten.
 
 **The links to the original source code and research can be found here:**
 - Vallado et al. SGP4 library main page: https://celestrak.org/publications/AIAA/2006-6753/
 - Source Code GitHub: https://github.com/CelesTrak/fundamentals-of-astrodynamics
 - Original Paper: https://celestrak.org/publications/AIAA/2006-6753/AIAA-2006-6753.pdf
+
+## Building
+Run from the repository root:
+
+```sh
+make          # Build both production static libraries
+make native   # Build only the native library
+make wasm     # Build only the WASM library
+```
+
+| Archive | Contents | Toolchain |
+| --- | --- | --- |
+| `build/lib/libsgp4_native.a` | Machine code for the build host's architecture | C++ compiler and `ar` |
+| `build/lib/libsgp4_wasm.a` | WebAssembly object code | Emscripten (`em++` and `emar`) |
+
+Override `OUT` to change the output directory, for example `make OUT=build/release`.
+Toolchain overrides include `NATIVE_CXX`, `NATIVE_AR`, `WASM_CXX`, and `WASM_AR`;
+the existing `COMPILER` and `AR` overrides remain defaults for the WASM toolchain.
 
 ## Licensing
 The original C++ version of the SGP4 library has no restrictions on distribution.

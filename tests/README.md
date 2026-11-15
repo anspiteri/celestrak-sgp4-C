@@ -28,6 +28,7 @@ make test-sanitize  # Native AddressSanitizer, UndefinedBehaviorSanitizer and le
 - `test_faults.cpp` runs separately and simulates allocation and SGP4 failures
   to check errors that are difficult to trigger with real satellite data.
 - `make/tests.mk` builds and runs both suites for native and WASM targets.
+  Each main suite links the corresponding production archive from `build/lib/`.
   `compare_targets.py` compares their outputs when you run `make test`.
 - `make test-sanitize` runs the native suites with memory and undefined-behavior
   checks enabled.

@@ -18,5 +18,7 @@ NATIVE_CC ?= cc
 NATIVE_CXX ?= c++
 NATIVE_AR ?= ar
 WASM_CC ?= emcc
+WASM_CXX ?= $(COMPILER)
+WASM_AR ?= $(AR)
 NODE ?= node
 PYTHON ?= python3

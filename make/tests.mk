@@ -10,8 +10,6 @@ FIXTURES := tests/fixtures/a_elements.csv tests/fixtures/a_states.csv tests/fixt
 NATIVE_TEST_DIR := $(OUT)/tests/native
 WASM_TEST_DIR := $(OUT)/tests/wasm
 
-NATIVE_TEST_LIB := $(NATIVE_TEST_DIR)/libsgp4.a
-
 NATIVE_C_OBJECTS := $(patsubst tests/%.c,$(NATIVE_TEST_DIR)/%.o,$(TEST_C))
 WASM_C_OBJECTS := $(patsubst tests/%.c,$(WASM_TEST_DIR)/%.o,$(TEST_C))
 
@@ -29,19 +27,8 @@ $(NATIVE_TEST_DIR)/%.o: tests/%.c $(BRIDGE_INCLUDE)
 	@mkdir -p $(@D)
 	$(NATIVE_CC) -std=c11 $(C_FLAGS) -Wextra -I. -c $< -o $@
 
-$(NATIVE_TEST_DIR)/sgp4.o: $(CELES_SRC) $(CELES_INCLUDE)
-	@mkdir -p $(@D)
-	$(NATIVE_CXX) -std=c++11 $(C_FLAGS) $(CELES_FLAGS) -c $< -o $@
-
-$(NATIVE_TEST_DIR)/bridge.o: $(BRIDGE_SRC) $(TEST_HEADERS)
-	@mkdir -p $(@D)
-	$(NATIVE_CXX) -std=c++11 $(C_FLAGS) $(CPP_FLAGS) -c $< -o $@
-
-$(NATIVE_TEST_LIB): $(NATIVE_TEST_DIR)/bridge.o $(NATIVE_TEST_DIR)/sgp4.o
-	$(NATIVE_AR) rcs $@ $^
-
-$(NATIVE_TEST_DIR)/test_suite: $(TEST_CPP) $(NATIVE_C_OBJECTS) $(TEST_HEADERS) $(NATIVE_TEST_LIB) $(FIXTURES)
-	$(NATIVE_CXX) -std=c++11 $(C_FLAGS) $(CPP_FLAGS) -I. $(TEST_CPP) $(NATIVE_C_OBJECTS) $(NATIVE_TEST_LIB) -o $@
+$(NATIVE_TEST_DIR)/test_suite: $(TEST_CPP) $(NATIVE_C_OBJECTS) $(TEST_HEADERS) $(NATIVE_LIB) $(FIXTURES)
+	$(NATIVE_CXX) -std=c++11 $(C_FLAGS) $(CPP_FLAGS) -I. $(TEST_CPP) $(NATIVE_C_OBJECTS) $(NATIVE_LIB) -o $@
 
 $(NATIVE_TEST_DIR)/test_faults: tests/test_faults.cpp $(BRIDGE_SRC) $(TEST_HEADERS)
 	@mkdir -p $(@D)
@@ -56,12 +43,12 @@ $(WASM_TEST_DIR)/%.o: tests/%.c $(BRIDGE_INCLUDE)
 	@mkdir -p $(@D)
 	$(WASM_CC) -std=c11 $(C_FLAGS) -Wextra -I. -c $< -o $@
 
-$(WASM_TEST_DIR)/test_suite.js: $(TEST_CPP) $(WASM_C_OBJECTS) $(TEST_HEADERS) $(TARGET) $(FIXTURES)
-	$(COMPILER) -std=c++11 $(C_FLAGS) $(CPP_FLAGS) -I. $(TEST_CPP) $(WASM_C_OBJECTS) $(TARGET) -sENVIRONMENT=node -sSINGLE_FILE=1 $(foreach file,$(FIXTURES),--embed-file $(file)) -o $@
+$(WASM_TEST_DIR)/test_suite.js: $(TEST_CPP) $(WASM_C_OBJECTS) $(TEST_HEADERS) $(WASM_LIB) $(FIXTURES)
+	$(WASM_CXX) -std=c++11 $(C_FLAGS) $(CPP_FLAGS) -I. $(TEST_CPP) $(WASM_C_OBJECTS) $(WASM_LIB) -sENVIRONMENT=node -sSINGLE_FILE=1 $(foreach file,$(FIXTURES),--embed-file $(file)) -o $@
 
 $(WASM_TEST_DIR)/test_faults.js: tests/test_faults.cpp $(BRIDGE_SRC) $(TEST_HEADERS)
 	@mkdir -p $(@D)
-	$(COMPILER) -std=c++11 $(C_FLAGS) $(CPP_FLAGS) -I. tests/test_faults.cpp $(BRIDGE_SRC) -sENVIRONMENT=node -sSINGLE_FILE=1 -o $@
+	$(WASM_CXX) -std=c++11 $(C_FLAGS) $(CPP_FLAGS) -I. tests/test_faults.cpp $(BRIDGE_SRC) -sENVIRONMENT=node -sSINGLE_FILE=1 -o $@
 
 # Build and run native tests with memory and undefined-behavior checks in a separate directory.
 test-sanitize:
